@@ -20,7 +20,7 @@ func main() {
 	for {
 		_, err := conn.Write([]byte("hello zinx V1.0..."))
 		if err != nil {
-			return'
+			return
 		}
 
 		buf := make([]byte, 512)
