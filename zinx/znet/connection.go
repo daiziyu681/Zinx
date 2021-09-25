@@ -16,20 +16,20 @@ type Connection struct {
 	// connect state
 	isClosed bool
 
-	// handle func
-	handleAPI ziface.HandleFunc
-
 	// channel
 	ExitChan chan bool
+
+	// connection router
+	Router ziface.IRouter
 }
 
-func NewConnection(conn *net.TCPConn, connID uint32, callback_api ziface.HandleFunc) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, router ziface.IRouter) *Connection {
 	c := &Connection{
 		Conn : conn,
 		ConnID : connID,
-		handleAPI : callback_api,
 		isClosed : false,
 		ExitChan : make(chan bool, 1),
+		Router : router,
 	}
 
 	return c
@@ -42,16 +42,20 @@ func (c *Connection) StartReader() {
 
 	for {
 		buf := make([]byte, 512)
-		cnt, err := c.Conn.Read(buf)
+		_, err := c.Conn.Read(buf)
 		if err != nil {
 			fmt.Println("recv buff error : ", err)
 			continue
 		}
 
-		if err := c.handleAPI(c.Conn, buf, cnt); err != nil {
-			fmt.Println("ConnID ", c.ConnID, " handle is error : ", err)
-			break
-		}
+		// get Request using tcp connection and reading data
+		req := NewRequest(c, buf)
+
+		go func() {
+			c.Router.PreHandle(req)
+			c.Router.Handle(req)
+			c.Router.PostHandle(req)
+		}()
 	}
 }
 
