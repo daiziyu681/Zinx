@@ -3,7 +3,6 @@ package znet
 import (
 	"fmt"
 	"net"
-	"errors"
 	"zinx/ziface"
 )
 
@@ -17,16 +16,8 @@ type Server struct {
 	IP string
 	// port
 	Port int
-}
-
-func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
-	fmt.Println("[Conn Handle] CallBackToClient...")
-	fmt.Printf("recv data %s\n", data)
-	if _, err := conn.Write(data[:cnt]); err != nil {
-		fmt.Println("Write back error : ", err)
-		return errors.New("CallBackToClient error")
-	}
-	return nil
+	// router
+	Router ziface.IRouter
 }
 
 func (s* Server) Start() {
@@ -59,7 +50,7 @@ func (s* Server) Start() {
 				continue
 			}
 
-			dealConn := NewConnection(conn, cid, CallBackToClient)
+			dealConn := NewConnection(conn, cid, s.Router)
 			cid++
 
 			go dealConn.Start()
@@ -79,6 +70,11 @@ func (s* Server) Serve() {
 	select{}
 }
 
+func (s *Server) AddRouter(router ziface.IRouter) {
+	s.Router = router
+	fmt.Println("add router successful!")
+}
+
 /* 
 	initialize server
 */
@@ -88,6 +84,7 @@ func NewServer(name string) ziface.Iserver {
 		IPVersion : "tcp4",
 		IP : "0.0.0.0",
 		Port : 8999,
+		Router : nil,
 	}
 
 	return s
