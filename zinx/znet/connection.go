@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"net"
 	"zinx/ziface"
-	"zinx/utils"
+	"io"
+	"errors"
 )
 
 type Connection struct {
@@ -42,15 +43,41 @@ func (c *Connection) StartReader() {
 	defer c.Stop()
 
 	for {
-		buf := make([]byte, utils.GlobalObject.MaxPackageSize)
-		_, err := c.Conn.Read(buf)
-		if err != nil {
-			fmt.Println("recv buff error : ", err)
-			continue
+		// buf := make([]byte, utils.GlobalObject.MaxPackageSize)
+		// _, err := c.Conn.Read(buf)
+		// if err != nil {
+		// 	fmt.Println("recv buff error : ", err)
+		// 	continue
+		// }
+
+		// create data pack object
+		dp := NewDataPack()
+
+		dataHead := make([]byte, dp.GetHeadLen())
+
+		if _, err := io.ReadFull(c.GetTCPConnection(), dataHead); err != nil {
+			fmt.Println("read data head error : ", err)
+			break
 		}
 
+		msg, err := dp.Unpack(dataHead)
+		if err != nil {
+			fmt.Println("unpack error : ", err)
+			break
+		}
+
+		var data []byte
+		if msg.GetDataLen() > 0 {
+			data = make([]byte, msg.GetDataLen())
+			if _, err := io.ReadFull(c.GetTCPConnection(), data); err != nil {
+				fmt.Println("read data error : ", err)
+				break
+			}
+		}
+		msg.SetData(data)
+
 		// get Request using tcp connection and reading data
-		req := NewRequest(c, buf)
+		req := NewRequest(c, msg)
 
 		go func() {
 			c.Router.PreHandle(req)
@@ -97,6 +124,23 @@ func (c *Connection) RemoteAddr() net.Addr {
 }
 
 // send msg to remote client
-func (c *Connection) Send(data []byte) error {
+func (c *Connection) SendMsg(msgId uint32, data []byte) error {
+	if c.isClosed == true {
+		return errors.New("connection closed when send msg")
+	}
+
+	dp := NewDataPack()
+
+	binaryMsg, err := dp.Pack(NewMsgPackage(msgId, data))
+	if err != nil {
+		fmt.Println("pack error msg id : ", msgId)
+		return errors.New("pack msg error")
+	}
+
+	if _, err := c.Conn.Write(binaryMsg); err != nil {
+		fmt.Println("Write msg id : ", msgId, " error")
+		return errors.New("conn write error")
+	}
+
 	return nil
 }
