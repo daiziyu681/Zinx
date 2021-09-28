@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"time"
 	"zinx/znet"
-	"io"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 	for {
 		dp := znet.NewDataPack()
 
-		binaryMsg, err := dp.Pack(znet.NewMsgPackage(0, []byte("zinx client test message")))
+		binaryMsg, err := dp.Pack(znet.NewMsgPackage(1, []byte("zinx client test message")))
 		if err != nil {
 			fmt.Println("pack error : ", err)
 			return
@@ -46,7 +46,7 @@ func main() {
 		}
 
 		msg := msgHead.(*znet.Message)
-		
+
 		if msgHead.GetDataLen() > 0 {
 			msg.Data = make([]byte, msg.GetDataLen())
 		}

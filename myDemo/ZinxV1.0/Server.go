@@ -1,9 +1,9 @@
 package main
 
-import(
+import (
 	"fmt"
-	"zinx/znet"
 	"zinx/ziface"
+	"zinx/znet"
 )
 
 // ping test self define router
@@ -12,16 +12,30 @@ type PingRouter struct {
 }
 
 func (this *PingRouter) Handle(request ziface.IRequest) {
-	fmt.Println("call router Handle..")
+	fmt.Println("call ping Handle..")
 	fmt.Println("recv from client: msgId = ", request.GetMsgId(), ", data = ", string(request.GetData()))
 
-	if err := request.GetConnection().SendMsg(1, []byte("ping...ping...ping")); err != nil {
+	if err := request.GetConnection().SendMsg(200, []byte("ping...ping...ping")); err != nil {
+		fmt.Println(err)
+	}
+}
+
+type HelloZinxRouter struct {
+	znet.BaseRouter
+}
+
+func (this *HelloZinxRouter) Handle(request ziface.IRequest) {
+	fmt.Println("call Hello Handle..")
+	fmt.Println("recv from client: msgId = ", request.GetMsgId(), ", data = ", string(request.GetData()))
+
+	if err := request.GetConnection().SendMsg(201, []byte("Hello, Welcome to Zinx!!")); err != nil {
 		fmt.Println(err)
 	}
 }
 
 func main() {
 	s := znet.NewServer("[zinx V1.0]")
-	s.AddRouter(&PingRouter{})
+	s.AddRouter(0, &PingRouter{})
+	s.AddRouter(1, &HelloZinxRouter{})
 	s.Serve()
 }
