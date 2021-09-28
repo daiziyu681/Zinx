@@ -1,11 +1,11 @@
 package znet
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"net"
 	"zinx/ziface"
-	"io"
-	"errors"
 )
 
 type Connection struct {
@@ -22,16 +22,16 @@ type Connection struct {
 	ExitChan chan bool
 
 	// connection router
-	Router ziface.IRouter
+	MsgHandler ziface.IMsgHandle
 }
 
-func NewConnection(conn *net.TCPConn, connID uint32, router ziface.IRouter) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, msgHandler ziface.IMsgHandle) *Connection {
 	c := &Connection{
-		Conn : conn,
-		ConnID : connID,
-		isClosed : false,
-		ExitChan : make(chan bool, 1),
-		Router : router,
+		Conn:       conn,
+		ConnID:     connID,
+		isClosed:   false,
+		ExitChan:   make(chan bool, 1),
+		MsgHandler: msgHandler,
 	}
 
 	return c
@@ -79,11 +79,7 @@ func (c *Connection) StartReader() {
 		// get Request using tcp connection and reading data
 		req := NewRequest(c, msg)
 
-		go func() {
-			c.Router.PreHandle(req)
-			c.Router.Handle(req)
-			c.Router.PostHandle(req)
-		}()
+		go c.MsgHandler.DoMsgHandle(req)
 	}
 }
 

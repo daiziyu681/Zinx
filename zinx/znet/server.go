@@ -17,11 +17,11 @@ type Server struct {
 	IP string
 	// port
 	Port int
-	// router
-	Router ziface.IRouter
+	// msg handler module
+	MsgHandler ziface.IMsgHandle
 }
 
-func (s* Server) Start() {
+func (s *Server) Start() {
 	fmt.Printf("[Start] Server Listenner at IP : %s, Port : %d, is starting\n", s.IP, s.Port)
 
 	go func() {
@@ -51,41 +51,40 @@ func (s* Server) Start() {
 				continue
 			}
 
-			dealConn := NewConnection(conn, cid, s.Router)
+			dealConn := NewConnection(conn, cid, s.MsgHandler)
 			cid++
 
 			go dealConn.Start()
 		}
 	}()
 
-	
 }
 
-func (s* Server) Stop() {
+func (s *Server) Stop() {
 
 }
 
-func (s* Server) Serve() {
+func (s *Server) Serve() {
 	s.Start()
 
-	select{}
+	select {}
 }
 
-func (s *Server) AddRouter(router ziface.IRouter) {
-	s.Router = router
+func (s *Server) AddRouter(msgID uint32, router ziface.IRouter) {
+	s.MsgHandler.AddRouter(msgID, router)
 	fmt.Println("add router successful!")
 }
 
-/* 
+/*
 	initialize server
 */
 func NewServer(name string) ziface.Iserver {
-	s := &Server {
-		Name : utils.GlobalObject.Name,
-		IPVersion : "tcp4",
-		IP : utils.GlobalObject.Host,
-		Port : utils.GlobalObject.TcpPort,
-		Router : nil,
+	s := &Server{
+		Name:       utils.GlobalObject.Name,
+		IPVersion:  "tcp4",
+		IP:         utils.GlobalObject.Host,
+		Port:       utils.GlobalObject.TcpPort,
+		MsgHandler: NewMsgHandle(),
 	}
 
 	return s
