@@ -6,4 +6,7 @@ type IRequest interface {
 
 	// get request msg data
 	GetData() []byte
+
+	// get request msg id
+	GetMsgId() uint32
 }
