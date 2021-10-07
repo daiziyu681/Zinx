@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"zinx/utils"
 	"zinx/ziface"
 )
 
@@ -83,7 +84,11 @@ func (c *Connection) StartReader() {
 		// get Request using tcp connection and reading data
 		req := NewRequest(c, msg)
 
-		go c.MsgHandler.DoMsgHandle(req)
+		if utils.GlobalObject.WorkerPoolSize > 0 {
+			c.MsgHandler.SendMsgToTaskQueue(req)
+		} else {
+			go c.MsgHandler.DoMsgHandle(req)
+		}
 	}
 }
 
