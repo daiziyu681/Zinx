@@ -1,33 +1,37 @@
 package utils
 
 import (
-	"zinx/ziface"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"zinx/ziface"
 )
 
 // configure zinx server via zinx.json
 
 type GlobalObj struct {
 	/*
-	about Server
+		about Server
 	*/
-	TcpServer ziface.Iserver   // server object
+	TcpServer ziface.Iserver // server object
 
-	Host string                // listen IP
+	Host string // listen IP
 
-	TcpPort int                // listen port
+	TcpPort int // listen port
 
-	Name string                // server name
+	Name string // server name
 
 	/*
-	about Zinx
+		about Zinx
 	*/
-	Version string             // zinx version
+	Version string // zinx version
 
-	MaxConn int                // server max connection
+	MaxConn int // server max connection
 
-	MaxPackageSize uint32      // zinx max data package
+	MaxPackageSize uint32 // zinx max data package
+
+	WorkerPoolSize uint32 // worker pool goroutine size
+
+	MaxWorkerTaskLen uint32 // max task len in worker
 }
 
 var GlobalObject *GlobalObj
@@ -47,13 +51,15 @@ func (g *GlobalObj) Reload() {
 func init() {
 
 	//default value
-	GlobalObject = &GlobalObj {
-		Name : "ZinxServerApp",
-		Version : "V0.1",
-		TcpPort : 8999,
-		Host : "0.0.0.0",
-		MaxConn : 1000,
-		MaxPackageSize : 4096,
+	GlobalObject = &GlobalObj{
+		Name:             "ZinxServerApp",
+		Version:          "V0.1",
+		TcpPort:          8999,
+		Host:             "0.0.0.0",
+		MaxConn:          1000,
+		MaxPackageSize:   4096,
+		WorkerPoolSize:   10,
+		MaxWorkerTaskLen: 1024,
 	}
 
 	GlobalObject.Reload()
