@@ -102,17 +102,17 @@ func (s *Server) SetOnConnStop(hookFunc func(connection ziface.IConnection)) {
 	s.OnConnStop = hookFunc
 }
 
-func (s *Server) CallOnConnStart(conn ziface.IConnection)) {
+func (s *Server) CallOnConnStart(conn ziface.IConnection) {
 	if s.OnConnStart != nil {
 		fmt.Println("----> Call OnConnStart()...")
-		OnConnStart(conn)
+		s.OnConnStart(conn)
 	}
 }
 
-func (s *Server) CallOnConnStop(conn ziface.IConnection)) {
+func (s *Server) CallOnConnStop(conn ziface.IConnection) {
 	if s.OnConnStop != nil {
 		fmt.Println("----> Call OnConnStop()...")
-		OnConnStop(conn)
+		s.OnConnStop(conn)
 	}
 }
 
