@@ -19,6 +19,8 @@ type Server struct {
 	Port int
 	// msg handler module
 	MsgHandler ziface.IMsgHandle
+	// connection manager
+	ConnMgr ziface.IConnManager
 }
 
 func (s *Server) Start() {
@@ -53,7 +55,13 @@ func (s *Server) Start() {
 				continue
 			}
 
-			dealConn := NewConnection(conn, cid, s.MsgHandler)
+			if s.ConnMgr.Len() >= utils.GlobalObject.MaxConn {
+				fmt.Println("====> The number of connection exceeds maximum!")
+				conn.Close()
+				continue
+			}
+
+			dealConn := NewConnection(s, conn, cid, s.MsgHandler)
 			cid++
 
 			go dealConn.Start()
@@ -63,7 +71,8 @@ func (s *Server) Start() {
 }
 
 func (s *Server) Stop() {
-
+	fmt.Println("[Stop] Zinx Server Name : ", s.Name)
+	s.ConnMgr.ClearConn()
 }
 
 func (s *Server) Serve() {
@@ -77,6 +86,10 @@ func (s *Server) AddRouter(msgID uint32, router ziface.IRouter) {
 	fmt.Println("add router successful!")
 }
 
+func (s *Server) GetConnMgr() ziface.IConnManager {
+	return s.ConnMgr
+}
+
 /*
 	initialize server
 */
@@ -87,6 +100,7 @@ func NewServer(name string) ziface.Iserver {
 		IP:         utils.GlobalObject.Host,
 		Port:       utils.GlobalObject.TcpPort,
 		MsgHandler: NewMsgHandle(),
+		ConnMgr:    NewConnManager(),
 	}
 
 	return s

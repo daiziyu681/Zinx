@@ -13,4 +13,7 @@ type Iserver interface {
 
 	// add a router
 	AddRouter(msgID uint32, router IRouter)
+
+	// get conn manager
+	GetConnMgr() IConnManager
 }
