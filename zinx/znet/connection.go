@@ -121,6 +121,8 @@ func (c *Connection) Start() {
 
 	go c.StartReader()
 	go c.StartWriter()
+
+	c.TcpServer.CallOnConnStart(c)
 }
 
 // stop link
@@ -131,6 +133,8 @@ func (c *Connection) Stop() {
 		return
 	}
 	c.isClosed = true
+
+	c.TcpServer.CallOnConnStop(c)
 
 	c.Conn.Close()
 

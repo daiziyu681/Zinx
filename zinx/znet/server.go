@@ -21,6 +21,10 @@ type Server struct {
 	MsgHandler ziface.IMsgHandle
 	// connection manager
 	ConnMgr ziface.IConnManager
+	// hook function called on connection start
+	OnConnStart func(conn ziface.IConnection)
+	// hook function called on connection stop
+	OnConnStop func(conn ziface.IConnection)
 }
 
 func (s *Server) Start() {
@@ -88,6 +92,28 @@ func (s *Server) AddRouter(msgID uint32, router ziface.IRouter) {
 
 func (s *Server) GetConnMgr() ziface.IConnManager {
 	return s.ConnMgr
+}
+
+func (s *Server) SetOnConnStart(hookFunc func(connection ziface.IConnection)) {
+	s.OnConnStart = hookFunc
+}
+
+func (s *Server) SetOnConnStop(hookFunc func(connection ziface.IConnection)) {
+	s.OnConnStop = hookFunc
+}
+
+func (s *Server) CallOnConnStart(conn ziface.IConnection)) {
+	if s.OnConnStart != nil {
+		fmt.Println("----> Call OnConnStart()...")
+		OnConnStart(conn)
+	}
+}
+
+func (s *Server) CallOnConnStop(conn ziface.IConnection)) {
+	if s.OnConnStop != nil {
+		fmt.Println("----> Call OnConnStop()...")
+		OnConnStop(conn)
+	}
 }
 
 /*
