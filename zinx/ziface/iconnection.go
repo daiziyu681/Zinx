@@ -20,6 +20,15 @@ type IConnection interface {
 
 	// send msg to remote client
 	SendMsg(msgId uint32, data []byte) error
+
+	// set connection property
+	SetProperty(key string, value interface{})
+
+	// get connection property
+	GetProperty(key string) (interface{}, error)
+
+	// remove connection property
+	RemoveProperty(key string)
 }
 
 type HandleFunc func(*net.TCPConn, []byte, int) error

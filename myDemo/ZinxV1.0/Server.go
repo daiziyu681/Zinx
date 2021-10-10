@@ -38,11 +38,22 @@ func DoConnectionBegin(conn ziface.IConnection) {
 	if err := conn.SendMsg(202, []byte("DoConnection Begin")); err != nil {
 		fmt.Println(err)
 	}
+
+	fmt.Println("set conn property...")
+	conn.SetProperty("Name", "lucky have you hua")
+	conn.SetProperty("Github", "https://github.com/daiziyu681")
 }
 
 func DoConnectionLost(conn ziface.IConnection) {
 	fmt.Println("===> DoConnectionLost is called...")
 	fmt.Println("conn ID = ", conn.GetConnID(), " is Lost...")
+
+	if name, err := conn.GetProperty("Name"); err == nil {
+		fmt.Println("Name = ", name)
+	}
+	if github, err := conn.GetProperty("Github"); err == nil {
+		fmt.Println("Github = ", github)
+	}
 }
 
 func main() {
